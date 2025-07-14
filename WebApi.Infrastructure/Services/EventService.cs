@@ -45,7 +45,7 @@ namespace WebApi.Infrastructure.Services
 
         public async Task<EventResponse> GetByIdAsync(int id)
         {
-            var eventEntity = await eventRepository.GetByIdAsync(id) ?? throw new NotFoundException("Event");
+            var eventEntity = await eventRepository.GetOneAsync(e => e.Id == id, includeProperties: ["SubEvents"]) ?? throw new NotFoundException("Event");
 
             var response = mapper.Map<EventResponse>(eventEntity);
 
