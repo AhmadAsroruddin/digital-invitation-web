@@ -31,3 +31,4 @@ reset-db:
 	dotnet ef database drop -p $(INFRA_PROJECT) -s $(STARTUP_PROJECT) --force --no-build
 	dotnet ef database update -p $(INFRA_PROJECT) -s $(STARTUP_PROJECT)
 
+

@@ -9,11 +9,8 @@ public class Guest :BaseEntity
     public int EventId { get; set; }
     [ForeignKey("EventId")]
     public Event? Event { get; set; }
-
     public string? Name { get; set; }
     public string? Phone { get; set; }
-    public string? Email { get; set; }
-    public string? Address { get; set; }
     public string? GuestGroup { get; set; } 
     public int Pax { get; set; }
     public string? InvitedBy { get; set; } 
