@@ -16,6 +16,9 @@ namespace WebApi.Infrastructure.DependencyInjection
             services.AddScoped<IContactRepository, ContactRepository>();
             services.AddScoped<IContactService, ContactService>();
 
+            services.AddScoped<IEventRepository, EventRepository>();
+            services.AddScoped<IEventService, EventService>();
+
             return services;
         }
     }
