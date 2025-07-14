@@ -7,6 +7,7 @@ namespace WebApi.Application.DTOs.Request.SubEvent
         public DateTime StartTime { get; set; }
         public DateTime? EndTime { get; set; }
         public string? Location { get; set; }
+        public int MaxPax { get; set; } = 1;
     }
 
 }

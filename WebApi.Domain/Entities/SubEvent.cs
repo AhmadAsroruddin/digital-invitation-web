@@ -13,6 +13,7 @@ namespace WebApi.Domain.Entities
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public string Location { get; set; } = default!;
+        public int MaxPax { get; set; } = 1;
         public ICollection<RSVP>? RSVPs { get; set; }
         public ICollection<Checkin>? Checkins { get; set; }
     }
