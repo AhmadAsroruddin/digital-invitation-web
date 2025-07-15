@@ -6,7 +6,7 @@ using WebApi.Application.Interfaces.Service;
 
 namespace WebApi.Api.Controllers
 {
-     [ApiController]
+    [ApiController]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/v1/")]
     public class GuestSubEventController(IGuestSubEventService guestSubEventService) : BaseApiController
@@ -14,12 +14,21 @@ namespace WebApi.Api.Controllers
         private readonly IGuestSubEventService guestSubEventService = guestSubEventService;
 
         [HttpPost]
-        [Route("sub-events/{subEventId}/guests")]
+        [Route("sub-event/{subEventId}/guests")]
         public async Task<IActionResult> Create(int subEventId, [FromForm] SaveGuestSubEventRequest request)
         {
             var result = await guestSubEventService.CreateAsync(subEventId, request);
 
             return Success(result, "Event Created");
+        }
+
+        [HttpGet]
+        [Route("sub-event/{subEventId}/guest/")]
+        public async Task<IActionResult> GetBysubEventId(int subEventId)
+        {
+            var result = await guestSubEventService.GetBySubEventIdAsync(subEventId);
+
+            return Success(result);
         }
     }
 }

@@ -1,6 +1,7 @@
 using AutoMapper;
 using WebApi.Application.DTOs.Request.GuestSubEvent;
 using WebApi.Application.DTOs.Response;
+using WebApi.Application.Exceptions;
 using WebApi.Application.Interfaces.Repository;
 using WebApi.Application.Interfaces.Service;
 using WebApi.Domain.Entities;
@@ -37,9 +38,13 @@ namespace WebApi.Infrastructure.Services
             throw new NotImplementedException();
         }
 
-        public Task<List<GuestSubEventResponse>> GetBySubEventIdAsync(int subEventId)
+        public async Task<List<GuestSubEventResponse>> GetBySubEventIdAsync(int subEventId)
         {
-            throw new NotImplementedException();
+            var subEvent = await guestSubEventRepository.GetAllAsync(e => e.SubEventId == subEventId, includeProperties: ["Guest"]) ?? throw new NotFoundException("GuestSubEvent");
+
+            var response = mapper.Map<List<GuestSubEventResponse>>(subEvent);
+
+            return response;
         }
 
         public Task<GuestSubEventResponse?> UpdateAsync(int id, SaveGuestSubEventRequest request)
