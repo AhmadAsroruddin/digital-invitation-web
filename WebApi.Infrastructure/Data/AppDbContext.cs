@@ -20,6 +20,9 @@ namespace WebApi.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<GuestSubEvent>()
+                .HasIndex(g => new { g.GuestId, g.SubEventId })
+                .IsUnique();
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         }
 

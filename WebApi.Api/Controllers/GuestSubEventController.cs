@@ -14,7 +14,7 @@ namespace WebApi.Api.Controllers
         private readonly IGuestSubEventService guestSubEventService = guestSubEventService;
 
         [HttpPost]
-        [Route("sub-event/{subEventId}/guests")]
+        [Route("sub-event/{subEventId}/guest")]
         public async Task<IActionResult> Create(int subEventId, [FromForm] SaveGuestSubEventRequest request)
         {
             var result = await guestSubEventService.CreateAsync(subEventId, request);
@@ -23,7 +23,7 @@ namespace WebApi.Api.Controllers
         }
 
         [HttpGet]
-        [Route("sub-event/{subEventId}/guest/")]
+        [Route("sub-event/{subEventId}/guest")]
         public async Task<IActionResult> GetBysubEventId(int subEventId)
         {
             var result = await guestSubEventService.GetBySubEventIdAsync(subEventId);

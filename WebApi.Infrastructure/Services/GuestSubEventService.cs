@@ -15,6 +15,12 @@ namespace WebApi.Infrastructure.Services
 
         public async Task<GuestSubEventResponse> CreateAsync(int subEventId, SaveGuestSubEventRequest request)
         {
+            var exists = await guestSubEventRepository.GetOneAsync(x => x.GuestId == request.GuestId && x.SubEventId == subEventId);
+
+            if (exists != null)
+            {
+                throw new InvalidOperationException("Guest sudah terdaftar pada SubEvent ini.");
+            }
             var guestSubEvent = mapper.Map<GuestSubEvent>(request);
             guestSubEvent.SubEventId = subEventId;
 
