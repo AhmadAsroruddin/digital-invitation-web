@@ -9,9 +9,10 @@ using WebApi.Domain.Entities;
 
 namespace WebApi.Infrastructure.Services
 {
-    public class SubEventService(ISubEventRepository subEventRepository, IMapper mapper) : ISubEventService
+    public class SubEventService(ISubEventRepository subEventRepository, IRSPVRepository rSPVRepository,IMapper mapper) : ISubEventService
     {
         private readonly ISubEventRepository subEventRepository = subEventRepository;
+        private readonly IRSPVRepository rSPVRepository = rSPVRepository;
         private readonly IMapper mapper = mapper;
 
         public async Task<SubEventResponse> CreateAsync(int eventId,SaveSubEventRequest request)
@@ -51,10 +52,19 @@ namespace WebApi.Infrastructure.Services
 
             return mapper.Map<SubEventResponse>(subEvent);
         }
+        
+        public async Task<SubEventResponse> GetAllBySubEvent(int subEventId)
+        {
+            var rsvp = await rSPVRepository.GetAllAsync(e => e.GuestSubEvent!.SubEvent!.Id == subEventId, includeProperties: ["GuestSubEvent.SubEvent"]);
+
+            var subEventResponse = mapper.Map<SubEventResponse>(rsvp.FirstOrDefault()!.GuestSubEvent!.SubEvent);
+            subEventResponse.RSVPs = mapper.Map<List<RSVPResponse>>(rsvp);
+            return subEventResponse;
+        }
 
         public async Task<SubEventResponse> UpdateAsync(int subEventId, int eventId, string userId, SaveSubEventRequest request)
         {
-            var subEvent = await subEventRepository.GetOneAsync(e => e.Id == subEventId && e.EventId ==eventId, includeProperties: ["Event"]) ?? throw new NotFoundException("subEvent");
+            var subEvent = await subEventRepository.GetOneAsync(e => e.Id == subEventId && e.EventId == eventId, includeProperties: ["Event"]) ?? throw new NotFoundException("subEvent");
 
             if (subEvent.Event?.CreatedBy != userId)
             {

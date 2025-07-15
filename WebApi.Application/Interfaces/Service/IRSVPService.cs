@@ -10,7 +10,6 @@ namespace WebApi.Application.Interfaces.Service
         Task<RSVPResponse> GetByIdAsync(int id);
         Task<RSVPResponse> UpdateAsync(int id,SaveRSVPRequest request);
         Task<IList<RSVPResponse>> GetAllAsync(int eventId);
-        Task<SubEventResponse> GetAllBySubEvent(int subEventId);
         Task<bool> DeletedAsync(int RSVPId, int eventId);
     }
 }

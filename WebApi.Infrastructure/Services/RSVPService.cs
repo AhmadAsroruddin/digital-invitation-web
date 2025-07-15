@@ -49,15 +49,6 @@ namespace WebApi.Infrastructure.Services
             throw new NotImplementedException();
         }
 
-        public async Task<SubEventResponse> GetAllBySubEvent(int subEventId)
-        {
-            var rsvp = await rSPVRepository.GetAllAsync(e => e.GuestSubEvent!.SubEvent!.Id == subEventId, includeProperties: ["GuestSubEvent.SubEvent"]);
-
-            var subEventResponse = mapper.Map<SubEventResponse>(rsvp.FirstOrDefault()!.GuestSubEvent!.SubEvent);
-            subEventResponse.RSVPs = mapper.Map<List<RSVPResponse>>(rsvp);
-            return subEventResponse;
-        }
-
         public Task<RSVPResponse> GetByIdAsync(int id)
         {
             throw new NotImplementedException();

@@ -43,7 +43,7 @@ namespace WebApi.Api.Controllers
 
         [HttpDelete]
         [Route("event/{eventId}/sub-event/{subEventId}")]
-        public async Task<IActionResult> DeleteById(int eventId,int subEventId)
+        public async Task<IActionResult> DeleteById(int eventId, int subEventId)
         {
             var userId = GetLoggedInUserId()!;
 
@@ -54,12 +54,21 @@ namespace WebApi.Api.Controllers
 
         [HttpPut]
         [Route("event/{eventId}/sub-event/{subEventId}")]
-        public async Task<IActionResult> Update(int eventId,int subEventId, [FromForm] SaveSubEventRequest request)
+        public async Task<IActionResult> Update(int eventId, int subEventId, [FromForm] SaveSubEventRequest request)
         {
             var userId = GetLoggedInUserId()!;
 
             var response = await subEventService.UpdateAsync(subEventId, eventId, userId, request);
             return Success(response, "Update Success");
+        }
+        
+        [HttpGet]
+        [Route("sub-event/{subEventId}/rsvp")]
+        public async Task<IActionResult> GetAllRSVPByESubEvent(int subEventId)
+        {
+            var result = await subEventService.GetAllBySubEvent(subEventId);
+
+            return Success(result);
         }
     }
 }

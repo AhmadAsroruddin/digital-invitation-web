@@ -21,14 +21,5 @@ namespace WebApi.Api.Controllers
 
             return Success(result);
         }
-
-        [HttpGet]
-        [Route("sub-event/{subEventId}/rsvp")]
-        public async Task<IActionResult> GetAllRSVPByESubEvent(int subEventId)
-        {
-            var result = await rSVPService.GetAllBySubEvent(subEventId);
-
-            return Success(result);
-        }
     }
 }

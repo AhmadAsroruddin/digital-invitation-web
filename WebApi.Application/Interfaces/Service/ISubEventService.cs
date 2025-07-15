@@ -12,5 +12,6 @@ namespace WebApi.Application.Interfaces.Service
         Task<SubEventResponse> UpdateAsync(int subEventId, int eventId, string userId, SaveSubEventRequest request);
         Task<IList<SubEventResponse>> GetAllAsync();
         Task<bool> DeletedAsync(int id, string userId);
+        Task<SubEventResponse> GetAllBySubEvent(int subEventId);
     }
 }
