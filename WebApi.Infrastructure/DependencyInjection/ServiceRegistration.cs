@@ -27,6 +27,9 @@ namespace WebApi.Infrastructure.DependencyInjection
 
             services.AddScoped<IGuestSubEventRepository, GuestSubEventRepository>();
             services.AddScoped<IGuestSubEventService, GuestSubEventService>();
+
+            services.AddScoped<IRSPVRepository, RSVPRepository>();
+            services.AddScoped<IRSVPService, RSVPService>();
             return services;
         }
     }

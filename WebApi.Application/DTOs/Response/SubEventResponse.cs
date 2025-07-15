@@ -9,5 +9,6 @@ namespace WebApi.Application.DTOs.Response
         public string? Location { get; set; }
         public int MaxPax { get; set; }
         public int EventId { get; set; }
+        public List<RSVPResponse> RSVPs { get; set; } = [];
     }   
 }

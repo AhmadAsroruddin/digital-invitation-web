@@ -47,7 +47,7 @@ namespace WebApi.Infrastructure.Services
 
         public async Task<SubEventResponse> GetByIdAsync(int id, int eventId)
         {
-            var subEvent = await subEventRepository.GetOneAsync(e => e.Id == id && e.EventId ==eventId, includeProperties: ["Event"]) ?? throw new NotFoundException("Sub Event");
+            var subEvent = await subEventRepository.GetOneAsync(e => e.Id == id && e.EventId ==eventId, includeProperties: ["Event", "RSVPs"]) ?? throw new NotFoundException("Sub Event");
 
             return mapper.Map<SubEventResponse>(subEvent);
         }
