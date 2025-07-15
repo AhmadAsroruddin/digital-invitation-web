@@ -30,6 +30,10 @@ namespace WebApi.Infrastructure.DependencyInjection
 
             services.AddScoped<IRSPVRepository, RSVPRepository>();
             services.AddScoped<IRSVPService, RSVPService>();
+
+            services.AddScoped<ICheckInRepository, CheckInRepository>();
+            services.AddScoped<ICheckInService, CheckInService>();
+            
             return services;
         }
     }
