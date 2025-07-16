@@ -33,6 +33,9 @@ namespace WebApi.Infrastructure.DependencyInjection
 
             services.AddScoped<ICheckInRepository, CheckInRepository>();
             services.AddScoped<ICheckInService, CheckInService>();
+
+            services.AddScoped<IGuestlistConfigRespository, GuestListConfigRepository>();
+            services.AddScoped<IGuestlistConfigService, GuestlistConfigService>();
             
             return services;
         }

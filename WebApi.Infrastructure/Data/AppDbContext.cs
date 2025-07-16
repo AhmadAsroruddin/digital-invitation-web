@@ -15,6 +15,7 @@ namespace WebApi.Infrastructure.Data
         public DbSet<GuestSubEvent> GuestSubEvents { get; set; }
         public DbSet<RSVP> RSVPs { get; set; }
         public DbSet<SubEvent> SubEvents { get; set; }
+        public DbSet<GuestlistConfig> GuestlistConfigs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
