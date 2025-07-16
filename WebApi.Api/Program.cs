@@ -7,6 +7,7 @@ using WebApi.Infrastructure.Data;
 using WebApi.Infrastructure.Identity;
 using WebApi.Api.Middlewares;
 using WebApi.Infrastructure.DependencyInjection;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +42,10 @@ builder.Services.AddControllers();
 builder.Services.AddApplicationServices();
 builder.Services.AddFluentValidationServices();
 builder.Services.AddAutoMapperServices();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 
 //register swagger
 builder.Services.AddEndpointsApiExplorer();

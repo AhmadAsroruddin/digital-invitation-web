@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using WebApi.Domain.Common;
+using WebApi.Domain.Enums;
 
 namespace WebApi.Domain.Entities;
 
@@ -11,7 +12,7 @@ public class Guest :BaseEntity
     public Event? Event { get; set; }
     public string? Name { get; set; }
     public string? Phone { get; set; }
-    public string? GuestGroup { get; set; } 
+    public GuestGroup? GuestGroup { get; set; } 
     public int Pax { get; set; }
     public string? InvitedBy { get; set; } 
     public string? Notes { get; set; }

@@ -54,7 +54,7 @@ namespace WebApi.Infrastructure.Services
                     }
                     if (filter.Key == "GuestGroup")
                     {
-                        guest = guest.Where(e => e.GuestGroup == filter.Value);
+                        guest = guest.Where(e => e.GuestGroup.Equals(filter.Value));
                     }
                     if (filter.Key == "SubEvent")
                     {
