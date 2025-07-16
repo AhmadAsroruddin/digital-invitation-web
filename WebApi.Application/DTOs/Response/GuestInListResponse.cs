@@ -7,7 +7,7 @@ namespace WebApi.Application.DTOs.Response
         public int GuestId { get; set; }
         public string? Name { get; set; }
         public string? Phone { get; set; }
-        public GuestGroup? GuestGroup { get; set; }
+        public string? GuestGroup { get; set; }
         public string? InvitedBy { get; set; }
         public int Pax { get; set; }
 

@@ -43,24 +43,24 @@ namespace WebApi.Infrastructure.Services
             var columns = JsonSerializer.Deserialize<List<string>>(config.ColumnsJson);
 
             var guest = await guestRepository.GetAllAsync(e => e.EventId == config!.EventId, includeProperties: ["GuestSubEvents.SubEvent", "Event", "RSVPs", "Checkins", "GuestSubEvents"]);
-
+            Console.WriteLine(JsonSerializer.Serialize(filters));
             if (filters != null)
             {
                 foreach (var filter in filters)
                 {
-                    if (filter.Key == "InvitedBy")
+                    if (filter.Key == "InvitedBy" && filter.Value != "")
                     {
                         guest = guest.Where(e => e.InvitedBy == filter.Value);
                     }
-                    if (filter.Key == "GuestGroup")
+                    if (filter.Key == "GuestGroup" && filter.Value != "")
                     {
-                        guest = guest.Where(e => e.GuestGroup.Equals(filter.Value));
+                        guest = guest.Where(e => e.GuestGroup == filter.Value);
                     }
-                    if (filter.Key == "SubEvent")
+                    if (filter.Key == "SubEvent" && filter.Value != "")
                     {
                         guest = guest.Where(g => g.GuestSubEvents!.Any(gse => gse.SubEventId.ToString() == filter.Value));
                     }
-                    if (filter.Key == "RSPV")
+                    if (filter.Key == "RSPV" && filter.Value != "")
                     {
                         if (filter.Value.Equals("all", StringComparison.CurrentCultureIgnoreCase))
                         {
