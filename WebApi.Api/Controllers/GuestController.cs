@@ -7,7 +7,6 @@ using WebApi.Application.Interfaces.Service;
 namespace WebApi.Api.Controllers
 {
     [ApiController]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/v1/")]
     public class GuestController(IGuestService guestService) : BaseApiController
     {

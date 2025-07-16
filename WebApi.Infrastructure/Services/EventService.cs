@@ -56,11 +56,6 @@ namespace WebApi.Infrastructure.Services
         {
             var eventEntity = await eventRepository.GetByIdAsync(id) ?? throw new NotFoundException("Event");
 
-            if (eventEntity.CreatedBy != creatorId)
-            {
-                throw new AccessForbiddenException("You don't have permission to edit this contact.");
-            }
-
             mapper.Map(request, eventEntity);
 
             await eventRepository.UpdateAsync(eventEntity);

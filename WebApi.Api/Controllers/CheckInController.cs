@@ -8,7 +8,6 @@ using WebApi.Infrastructure.Services;
 namespace WebApi.Api.Controllers
 {
     [ApiController]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/v1/checkin/")]
     public class CheckInController(ICheckInService checkInService) : BaseApiController
     {

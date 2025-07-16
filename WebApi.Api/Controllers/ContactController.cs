@@ -9,7 +9,6 @@ using WebApi.Application.Interfaces.Service;
 namespace WebApi.Api.Controllers
 {
     [ApiController]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/v1/contacts")]
     public class ContactController(IContactService contactService) : BaseApiController
     {

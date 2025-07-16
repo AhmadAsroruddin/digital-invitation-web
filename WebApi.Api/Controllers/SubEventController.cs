@@ -8,7 +8,6 @@ using WebApi.Application.Interfaces.Service;
 namespace WebApi.Api.Controllers
 {
     [ApiController]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/v1/")]
     public class SubEventController(ISubEventService subEventService) : BaseApiController
     {
