@@ -17,5 +17,6 @@ public class Guest :BaseEntity
     public string? Notes { get; set; }
 
     public ICollection<RSVP>? RSVPs { get; set; }
+    public ICollection<GuestSubEvent>? GuestSubEvents { get; set; }
     public ICollection<Checkin>? Checkins { get; set; }
 }

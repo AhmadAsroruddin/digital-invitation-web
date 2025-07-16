@@ -1,21 +1,28 @@
+using System.Text.Json;
 using AutoMapper;
+using Microsoft.AspNetCore.Mvc.Filters;
 using WebApi.Application.DTOs.Request.GuestListConfig;
 using WebApi.Application.DTOs.Response;
 using WebApi.Application.Interfaces.Repository;
 using WebApi.Application.Interfaces.Service;
 using WebApi.Domain.Entities;
 
+
 namespace WebApi.Infrastructure.Services
 {
-    public class GuestlistConfigService(IGuestlistConfigRespository guestlistConfigRespository, IMapper mapper) : IGuestlistConfigService
+    public class GuestlistConfigService(IGuestlistConfigRespository guestlistConfigRespository, IGuestRepository guestRepository ,IMapper mapper) : IGuestlistConfigService
     {
         private readonly IGuestlistConfigRespository guestlistConfigRespository = guestlistConfigRespository;
+        private readonly IGuestRepository guestRepository = guestRepository;
         private readonly IMapper mapper = mapper;
 
         public async Task<GuestlistConfigResponse> CreateAsync(SaveGuestlistConfigRequest request)
         {
             var guestlistConfig = mapper.Map<GuestlistConfig>(request);
             guestlistConfig.ShareCode = Guid.NewGuid().ToString("N");
+            guestlistConfig.FilterJson = JsonSerializer.Serialize(request.FilterJson);
+            guestlistConfig.ColumnsJson = JsonSerializer.Serialize(request.ColumnsJson);
+
             await guestlistConfigRespository.CreateAsync(guestlistConfig);
 
             return mapper.Map<GuestlistConfigResponse>(guestlistConfig);
@@ -28,9 +35,74 @@ namespace WebApi.Infrastructure.Services
             return mapper.Map<List<GuestlistConfigResponse>>(guestlistConfig);
         }
 
-        public Task<SaveGuestlistConfigRequest> GetByShareCodeAsync(string shareCode)
+        public async Task<GuestlistFilteredResponse> GetByShareCodeAsync(string shareCode)
         {
-            throw new NotImplementedException();
+            var config = await guestlistConfigRespository.GetOneAsync(e => e.ShareCode == shareCode, includeProperties: ["Event"]) ?? throw new InvalidOperationException("No Configuration Found");
+
+            var filters = JsonSerializer.Deserialize<Dictionary<string, string>>(config.FilterJson);
+            var columns = JsonSerializer.Deserialize<List<string>>(config.ColumnsJson);
+
+            var guest = await guestRepository.GetAllAsync(e => e.EventId == config!.EventId, includeProperties: ["GuestSubEvents.SubEvent", "Event", "RSVPs", "Checkins", "GuestSubEvents"]);
+
+            if (filters != null)
+            {
+                foreach (var filter in filters)
+                {
+                    if (filter.Key == "InvitedBy")
+                    {
+                        guest = guest.Where(e => e.InvitedBy == filter.Value);
+                    }
+                    if (filter.Key == "GuestGroup")
+                    {
+                        guest = guest.Where(e => e.GuestGroup == filter.Value);
+                    }
+                    if (filter.Key == "SubEvent")
+                    {
+                        guest = guest.Where(g => g.GuestSubEvents!.Any(gse => gse.SubEventId.ToString() == filter.Value));
+                    }
+                    if (filter.Key == "RSPV")
+                    {
+                        if (filter.Value.Equals("all", StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            guest = guest.Where(e => e.RSVPs != null && e.RSVPs.Count > 0);
+                        }
+                        else
+                        {
+                            guest = guest.Where(e => e.RSVPs != null && e.RSVPs.Any(rsvp => rsvp.Status == filter.Value));
+                        }
+                    }
+                }
+            }
+            var response = new GuestlistFilteredResponse
+            {
+                ConfigurationName = config.Name,
+                EventId = config.EventId,
+                Event = config.Event!,
+                    Guests = [.. guest.Select(g => new GuestInList
+                {
+                    GuestId = g.Id,
+                    Name = g.Name,
+                    Phone = g.Phone,
+                    GuestGroup = g.GuestGroup,
+                    InvitedBy = g.InvitedBy,
+                    Pax = g.Pax,
+                    SubEvents = g.GuestSubEvents?.Select(s => new SubEventResponse
+                    {
+                        Id = s.SubEvent!.Id,
+                        Name = s.SubEvent.Name!,
+                        StartTime = s.SubEvent.StartTime,
+                        EndTime = s.SubEvent.EndTime,
+                        Location = s.SubEvent.Location
+                    }).ToList() ?? [],
+                    RSVPs = g.RSVPs?.Select(r => new RSVPResponse
+                    {
+                        Status = r.Status,
+                        PaxConfirmed = r.PaxConfirmed,
+                        RSVPTime = r.RSVPTime
+                    }).ToList() ?? []
+                })]
+            };
+            return response;
         }
     }
 }

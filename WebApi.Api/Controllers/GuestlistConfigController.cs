@@ -21,5 +21,14 @@ namespace WebApi.Api.Controllers
 
             return Success(result);
         }
+
+        [HttpGet]
+        [Route("/event/{eventId}/guestlist-config")]
+        public async Task<IActionResult> GetByEventId(int eventId)
+        {
+            var result = await guestlistConfigService.GetByEventIdAsync(eventId);
+
+            return Success(result);
+        }
     }
 }

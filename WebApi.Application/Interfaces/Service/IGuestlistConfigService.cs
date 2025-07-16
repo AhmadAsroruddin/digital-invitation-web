@@ -7,6 +7,6 @@ namespace WebApi.Application.Interfaces.Service
     {
         Task<GuestlistConfigResponse> CreateAsync(SaveGuestlistConfigRequest request);
         Task<List<GuestlistConfigResponse>> GetByEventIdAsync(int eventId);
-        Task<SaveGuestlistConfigRequest> GetByShareCodeAsync(string shareCode);
+        Task<GuestlistFilteredResponse> GetByShareCodeAsync(string shareCode);
     }
 }
