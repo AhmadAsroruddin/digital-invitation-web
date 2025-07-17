@@ -3,6 +3,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc.Filters;
 using WebApi.Application.DTOs.Request.GuestListConfig;
 using WebApi.Application.DTOs.Response;
+using WebApi.Application.Exceptions;
 using WebApi.Application.Interfaces.Repository;
 using WebApi.Application.Interfaces.Service;
 using WebApi.Domain.Entities;
@@ -33,6 +34,13 @@ namespace WebApi.Infrastructure.Services
             var guestlistConfig = await guestlistConfigRespository.GetAllAsync(e => e.EventId == eventId, includeProperties: ["Event"]);
 
             return mapper.Map<List<GuestlistConfigResponse>>(guestlistConfig);
+        }
+
+        public async Task<GuestlistConfigResponse> GetByIdAsync(int Id)
+        {
+            var guestlistConfig = await guestlistConfigRespository.GetOneAsync(e => e.Id == Id, includeProperties: ["Event"]) ?? throw new NotFoundException("Guest List Configuration");
+
+            return mapper.Map<GuestlistConfigResponse>(guestlistConfig);
         }
 
         public async Task<GuestlistFilteredResponse> GetByShareCodeAsync(string shareCode)
@@ -103,6 +111,20 @@ namespace WebApi.Infrastructure.Services
                 })]
             };
             return response;
+        }
+
+        public async Task<GuestlistConfigResponse> UpdateAsync(int gueslistConfigId, SaveGuestlistConfigRequest request)
+        {
+            var guestlistConfig = await guestlistConfigRespository.GetByIdAsync(gueslistConfigId) ?? throw new NotFoundException("Guest List Configuration");
+            request.EventId = guestlistConfig.EventId;
+
+            mapper.Map(request, guestlistConfig);
+
+            guestlistConfig.FilterJson = JsonSerializer.Serialize(request.FilterJson);
+            guestlistConfig.ColumnsJson = JsonSerializer.Serialize(request.ColumnsJson);
+            await guestlistConfigRespository.UpdateAsync(guestlistConfig);
+
+            return mapper.Map<GuestlistConfigResponse>(guestlistConfig);
         }
     }
 }

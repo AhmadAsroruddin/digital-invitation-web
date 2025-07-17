@@ -22,10 +22,28 @@ namespace WebApi.Api.Controllers
         }
 
         [HttpGet]
-        [Route("/event/{eventId}/guestlist-config")]
+        [Route("event/{eventId}/guestlist-config")]
         public async Task<IActionResult> GetByEventId(int eventId)
         {
             var result = await guestlistConfigService.GetByEventIdAsync(eventId);
+
+            return Success(result);
+        }
+
+        [HttpPut]
+        [Route("guestlist-config/{guestlistConfigId}")]
+        public async Task<IActionResult> UpdateAsync(int guestlistConfigId, [FromBody] SaveGuestlistConfigRequest request)
+        {
+            var result = await guestlistConfigService.UpdateAsync(guestlistConfigId, request);
+
+            return Success(result);
+        }
+
+        [HttpGet]
+        [Route("guestlist-config/{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var result = await guestlistConfigService.GetByIdAsync(id);
 
             return Success(result);
         }
