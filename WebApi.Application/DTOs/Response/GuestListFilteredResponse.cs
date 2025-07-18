@@ -8,5 +8,7 @@ namespace WebApi.Application.DTOs.Response
         public int EventId { get; set; }
         public Event? Event { get; set; }
         public List<GuestInList> Guests { get; set; } = [];
+         public string? FilterJson { get; set; }
+        public string? ColumnsJson { get; set; }
     }
 }

@@ -60,7 +60,7 @@ namespace WebApi.Infrastructure.Services
             var columns = JsonSerializer.Deserialize<List<string>>(config.ColumnsJson);
 
             var guest = await guestRepository.GetAllAsync(e => e.EventId == config!.EventId, includeProperties: ["GuestSubEvents.SubEvent", "Event", "RSVPs", "Checkins", "GuestSubEvents"]);
-            Console.WriteLine(JsonSerializer.Serialize(filters));
+            Console.WriteLine(guest.First().RSVPs);
             if (filters != null)
             {
                 foreach (var filter in filters)
@@ -95,7 +95,9 @@ namespace WebApi.Infrastructure.Services
                 ConfigurationName = config.Name,
                 EventId = config.EventId,
                 Event = config.Event!,
-                    Guests = [.. guest.Select(g => new GuestInList
+                FilterJson = config.FilterJson,
+                ColumnsJson = config.ColumnsJson,
+                Guests = [.. guest.Select(g => new GuestInList
                 {
                     GuestId = g.Id,
                     Name = g.Name,
@@ -113,11 +115,13 @@ namespace WebApi.Infrastructure.Services
                     }).ToList() ?? [],
                     RSVPs = g.RSVPs?.Select(r => new RSVPResponse
                     {
+                        Id = r.Id,
                         Status = r.Status,
                         PaxConfirmed = r.PaxConfirmed,
                         RSVPTime = r.RSVPTime
                     }).ToList() ?? []
                 })]
+                
             };
             return response;
         }
