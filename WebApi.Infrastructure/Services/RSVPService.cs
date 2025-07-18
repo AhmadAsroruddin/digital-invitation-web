@@ -28,6 +28,7 @@ namespace WebApi.Infrastructure.Services
             var rsvp = mapper.Map<RSVP>(request);
             rsvp.GuestSubEventId = guestSubEventId;
             rsvp.RSVPTime = DateTime.Now;
+        
 
             var quotaConfirmation = request.PaxConfirmed > guestSubEvent.SubEvent?.MaxPax;
             if (quotaConfirmation)

@@ -11,10 +11,11 @@ using WebApi.Domain.Entities;
 
 namespace WebApi.Infrastructure.Services
 {
-    public class GuestlistConfigService(IGuestlistConfigRespository guestlistConfigRespository, IGuestRepository guestRepository ,IMapper mapper) : IGuestlistConfigService
+    public class GuestlistConfigService(IGuestlistConfigRespository guestlistConfigRespository, IGuestRepository guestRepository , IRSPVRepository rSPVRepository,IMapper mapper) : IGuestlistConfigService
     {
         private readonly IGuestlistConfigRespository guestlistConfigRespository = guestlistConfigRespository;
         private readonly IGuestRepository guestRepository = guestRepository;
+        private readonly IRSPVRepository rSPVRepository = rSPVRepository;
         private readonly IMapper mapper = mapper;
 
         public async Task<GuestlistConfigResponse> CreateAsync(SaveGuestlistConfigRequest request)
@@ -60,7 +61,7 @@ namespace WebApi.Infrastructure.Services
             var columns = JsonSerializer.Deserialize<List<string>>(config.ColumnsJson);
 
             var guest = await guestRepository.GetAllAsync(e => e.EventId == config!.EventId, includeProperties: ["GuestSubEvents.SubEvent", "Event", "RSVPs", "Checkins", "GuestSubEvents"]);
-            Console.WriteLine(guest.First().RSVPs);
+            
             if (filters != null)
             {
                 foreach (var filter in filters)
@@ -90,6 +91,8 @@ namespace WebApi.Infrastructure.Services
                     }
                 }
             }
+
+            var allRsvp = await rSPVRepository.GetAllAsync(includeProperties: ["GuestSubEvent.Guest"]); 
             var response = new GuestlistFilteredResponse
             {
                 ConfigurationName = config.Name,
@@ -97,29 +100,32 @@ namespace WebApi.Infrastructure.Services
                 Event = config.Event!,
                 FilterJson = config.FilterJson,
                 ColumnsJson = config.ColumnsJson,
-                Guests = [.. guest.Select(g => new GuestInList
-                {
-                    GuestId = g.Id,
-                    Name = g.Name,
-                    Phone = g.Phone,
-                    GuestGroup = g.GuestGroup,
-                    InvitedBy = g.InvitedBy,
-                    Pax = g.Pax,
-                    SubEvents = g.GuestSubEvents?.Select(s => new SubEventResponse
+                Guests = [.. guest.Select(g => {
+                    var rsvp = allRsvp.FirstOrDefault(e => e.GuestSubEvent!.GuestId == g.Id);
+                    return new GuestInList
                     {
-                        Id = s.SubEvent!.Id,
-                        Name = s.SubEvent.Name!,
-                        StartTime = s.SubEvent.StartTime,
-                        EndTime = s.SubEvent.EndTime,
-                        Location = s.SubEvent.Location
-                    }).ToList() ?? [],
-                    RSVPs = g.RSVPs?.Select(r => new RSVPResponse
-                    {
-                        Id = r.Id,
-                        Status = r.Status,
-                        PaxConfirmed = r.PaxConfirmed,
-                        RSVPTime = r.RSVPTime
-                    }).ToList() ?? []
+                        GuestId = g.Id,
+                        Name = g.Name,
+                        Phone = g.Phone,
+                        GuestGroup = g.GuestGroup,
+                        InvitedBy = g.InvitedBy,
+                        Pax = g.Pax,
+                        SubEvents = g.GuestSubEvents?.Select(s => new SubEventResponse
+                        {
+                            Id = s.SubEvent!.Id,
+                            Name = s.SubEvent.Name!,
+                            StartTime = s.SubEvent.StartTime,
+                            EndTime = s.SubEvent.EndTime,
+                            Location = s.SubEvent.Location
+                        }).ToList() ?? [],
+                        RSVP =  new RSVPResponse
+                        {
+                            Id = rsvp!.Id,
+                            Status = rsvp.Status,
+                            PaxConfirmed = rsvp.PaxConfirmed,
+                            RSVPTime = rsvp.RSVPTime
+                        }
+                    };
                 })]
                 
             };

@@ -12,6 +12,6 @@ namespace WebApi.Application.DTOs.Response
         public int Pax { get; set; }
 
         public List<SubEventResponse> SubEvents { get; set; } = new();
-        public List<RSVPResponse> RSVPs { get; set; } = new();
+        public RSVPResponse RSVP { get; set; } = new();
     }
 }
