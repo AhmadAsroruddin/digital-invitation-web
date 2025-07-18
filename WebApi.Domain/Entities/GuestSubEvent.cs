@@ -12,5 +12,6 @@ public class GuestSubEvent : BaseEntity
     public int SubEventId { get; set; }
     [ForeignKey("SubEventId")]
     public SubEvent? SubEvent { get; set; }
-    
+    public Checkin? Checkin { get; set; }
+    public RSVP? RSVP{ get; set; }
 }   

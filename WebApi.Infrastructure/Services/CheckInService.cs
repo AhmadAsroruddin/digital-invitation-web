@@ -16,6 +16,8 @@ namespace WebApi.Infrastructure.Services
         public async Task<CheckInResponse> CreateAsync(SaveCheckInRequest request)
         {
             var checkin = mapper.Map<Checkin>(request);
+            checkin.CheckinTime = DateTime.Now;
+            checkin.CheckedIn = true;
 
             await checkinRepository.CreateAsync(checkin);
 

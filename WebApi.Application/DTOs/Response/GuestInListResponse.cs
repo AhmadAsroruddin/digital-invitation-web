@@ -10,8 +10,9 @@ namespace WebApi.Application.DTOs.Response
         public string? GuestGroup { get; set; }
         public string? InvitedBy { get; set; }
         public int Pax { get; set; }
+        public CheckInResponse? CheckIn { get; set; }
 
-        public List<SubEventResponse> SubEvents { get; set; } = new();
-        public RSVPResponse RSVP { get; set; } = new();
+        public List<SubEventResponse>? SubEvents { get; set; } = [];
+        public RSVPResponse? RSVP { get; set; } = new();
     }
 }

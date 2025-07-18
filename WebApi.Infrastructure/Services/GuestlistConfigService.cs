@@ -11,11 +11,12 @@ using WebApi.Domain.Entities;
 
 namespace WebApi.Infrastructure.Services
 {
-    public class GuestlistConfigService(IGuestlistConfigRespository guestlistConfigRespository, IGuestRepository guestRepository , IRSPVRepository rSPVRepository,IMapper mapper) : IGuestlistConfigService
+    public class GuestlistConfigService(IGuestlistConfigRespository guestlistConfigRespository, IGuestSubEventRepository guestSubEventRepository , IRSPVRepository rSPVRepository, ICheckInRepository checkInRepository,IMapper mapper) : IGuestlistConfigService
     {
         private readonly IGuestlistConfigRespository guestlistConfigRespository = guestlistConfigRespository;
-        private readonly IGuestRepository guestRepository = guestRepository;
+        private readonly IGuestSubEventRepository guestSubEventRepository = guestSubEventRepository;
         private readonly IRSPVRepository rSPVRepository = rSPVRepository;
+        private readonly ICheckInRepository checkInRepository = checkInRepository;
         private readonly IMapper mapper = mapper;
 
         public async Task<GuestlistConfigResponse> CreateAsync(SaveGuestlistConfigRequest request)
@@ -32,7 +33,7 @@ namespace WebApi.Infrastructure.Services
 
         public async Task<bool> DeleteById(int id)
         {
-            var guestlistConfig = await guestlistConfigRespository.GetOneAsync(e => e.Id == id, includeProperties: ["Event"]) ?? throw new NotFoundException("Guest List Configuration");
+            var guestlistConfig = await guestlistConfigRespository.GetOneAsync(e => e.Id == id) ?? throw new NotFoundException("Guest List Configuration");
 
             await guestlistConfigRespository.DeleteAsync(guestlistConfig);
 
@@ -41,76 +42,75 @@ namespace WebApi.Infrastructure.Services
 
         public async Task<List<GuestlistConfigResponse>> GetByEventIdAsync(int eventId)
         {
-            var guestlistConfig = await guestlistConfigRespository.GetAllAsync(e => e.EventId == eventId, includeProperties: ["Event"])?? throw new NotFoundException("Guest List Configuration");
+            var guestlistConfig = await guestlistConfigRespository.GetAllAsync(e => e.SubEvent!.EventId == eventId, includeProperties: ["SubEvent"])?? throw new NotFoundException("Guest List Configuration");
 
             return mapper.Map<List<GuestlistConfigResponse>>(guestlistConfig);
         }
 
         public async Task<GuestlistConfigResponse> GetByIdAsync(int Id)
         {
-            var guestlistConfig = await guestlistConfigRespository.GetOneAsync(e => e.Id == Id, includeProperties: ["Event"]) ?? throw new NotFoundException("Guest List Configuration");
-
-            return mapper.Map<GuestlistConfigResponse>(guestlistConfig);
+            var guestlistConfig = await guestlistConfigRespository.GetOneAsync(e => e.Id == Id, includeProperties: ["SubEvent.Event"]) ?? throw new NotFoundException("Guest List Configuration");
+            
+            var response = mapper.Map<GuestlistConfigResponse>(guestlistConfig);
+            response.EventId = guestlistConfig.SubEvent!.EventId;
+            return response;
         }
 
         public async Task<GuestlistFilteredResponse> GetByShareCodeAsync(string shareCode)
         {
-            var config = await guestlistConfigRespository.GetOneAsync(e => e.ShareCode == shareCode, includeProperties: ["Event"]) ?? throw new InvalidOperationException("No Configuration Found");
+            var config = await guestlistConfigRespository.GetOneAsync(e => e.ShareCode == shareCode, includeProperties: ["SubEvent", "SubEvent.Event"]) ?? throw new InvalidOperationException("No Configuration Found");
 
             var filters = JsonSerializer.Deserialize<Dictionary<string, string>>(config.FilterJson);
             var columns = JsonSerializer.Deserialize<List<string>>(config.ColumnsJson);
 
-            var guest = await guestRepository.GetAllAsync(e => e.EventId == config!.EventId, includeProperties: ["GuestSubEvents.SubEvent", "Event", "RSVPs", "Checkins", "GuestSubEvents"]);
-            
+            var guest = await guestSubEventRepository.GetAllAsync(e => e.SubEvent!.Id == config.SubEventId, includeProperties: [ "RSVP", "Checkin", "SubEvent", "SubEvent.Event","Guest"]);
+
             if (filters != null)
             {
                 foreach (var filter in filters)
                 {
                     if (filter.Key == "InvitedBy" && filter.Value != "")
                     {
-                        guest = guest.Where(e => e.InvitedBy == filter.Value);
+                        guest = guest.Where(e => e.Guest!.InvitedBy == filter.Value);
                     }
                     if (filter.Key == "GuestGroup" && filter.Value != "")
                     {
-                        guest = guest.Where(e => e.GuestGroup == filter.Value);
+                        guest = guest.Where(e => e.Guest!.GuestGroup == filter.Value);
                     }
                     if (filter.Key == "SubEvent" && filter.Value != "")
                     {
-                        guest = guest.Where(g => g.GuestSubEvents!.Any(gse => gse.SubEventId.ToString() == filter.Value));
+                        guest = guest.Where(g => g.SubEventId == int.Parse(filter.Value));
                     }
-                    if (filter.Key == "RSPV" && filter.Value != "")
+                    if (filter.Key == "RSVP" && filter.Value != "")
                     {
                         if (filter.Value.Equals("all", StringComparison.CurrentCultureIgnoreCase))
                         {
-                            guest = guest.Where(e => e.RSVPs != null && e.RSVPs.Count > 0);
+                            guest = guest.Where(e => e.RSVP != null);
                         }
                         else
                         {
-                            guest = guest.Where(e => e.RSVPs != null && e.RSVPs.Any(rsvp => rsvp.Status == filter.Value));
+                            guest = guest.Where(e => e.RSVP != null && e.RSVP.Status == filter.Value);
                         }
                     }
                 }
             }
 
-            var allRsvp = await rSPVRepository.GetAllAsync(includeProperties: ["GuestSubEvent.Guest"]); 
             var response = new GuestlistFilteredResponse
             {
                 ConfigurationName = config.Name,
-                EventId = config.EventId,
-                Event = config.Event!,
                 FilterJson = config.FilterJson,
                 ColumnsJson = config.ColumnsJson,
+                Event = mapper.Map<EventResponse>(guest.FirstOrDefault()!.SubEvent!.Event),
                 Guests = [.. guest.Select(g => {
-                    var rsvp = allRsvp.FirstOrDefault(e => e.GuestSubEvent!.GuestId == g.Id);
                     return new GuestInList
                     {
                         GuestId = g.Id,
-                        Name = g.Name,
-                        Phone = g.Phone,
-                        GuestGroup = g.GuestGroup,
-                        InvitedBy = g.InvitedBy,
-                        Pax = g.Pax,
-                        SubEvents = g.GuestSubEvents?.Select(s => new SubEventResponse
+                        Name = g.Guest!.Name,
+                        Phone = g.Guest!.Phone,
+                        GuestGroup = g.Guest.GuestGroup,
+                        InvitedBy = g.Guest.InvitedBy,
+                        Pax = g.Guest.Pax,
+                        SubEvents = g.Guest.GuestSubEvents?.Select(s => new SubEventResponse
                         {
                             Id = s.SubEvent!.Id,
                             Name = s.SubEvent.Name!,
@@ -118,13 +118,8 @@ namespace WebApi.Infrastructure.Services
                             EndTime = s.SubEvent.EndTime,
                             Location = s.SubEvent.Location
                         }).ToList() ?? [],
-                        RSVP =  new RSVPResponse
-                        {
-                            Id = rsvp!.Id,
-                            Status = rsvp.Status,
-                            PaxConfirmed = rsvp.PaxConfirmed,
-                            RSVPTime = rsvp.RSVPTime
-                        }
+                        RSVP = mapper.Map<RSVPResponse>(g.RSVP),
+                        CheckIn = mapper.Map<CheckInResponse>(g.Checkin)
                     };
                 })]
                 
@@ -135,7 +130,6 @@ namespace WebApi.Infrastructure.Services
         public async Task<GuestlistConfigResponse> UpdateAsync(int gueslistConfigId, SaveGuestlistConfigRequest request)
         {
             var guestlistConfig = await guestlistConfigRespository.GetByIdAsync(gueslistConfigId) ?? throw new NotFoundException("Guest List Configuration");
-            request.EventId = guestlistConfig.EventId;
 
             mapper.Map(request, guestlistConfig);
 
