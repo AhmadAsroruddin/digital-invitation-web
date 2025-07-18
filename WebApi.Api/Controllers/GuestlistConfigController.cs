@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Client;
 using WebApi.Application.DTOs.Request.GuestListConfig;
 using WebApi.Application.Interfaces.Service;
 
@@ -46,6 +47,15 @@ namespace WebApi.Api.Controllers
             var result = await guestlistConfigService.GetByIdAsync(id);
 
             return Success(result);
+        }
+
+        [HttpDelete]
+        [Route("guestlist-config/{id}")]
+        public async Task<IActionResult> DeleteById(int id)
+        {
+            var result = await guestlistConfigService.DeleteById(id);
+
+            return Success<object>(result, "Delete Success");
         }
     }
 }

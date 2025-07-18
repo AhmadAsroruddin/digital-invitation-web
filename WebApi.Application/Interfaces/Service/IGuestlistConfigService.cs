@@ -10,5 +10,6 @@ namespace WebApi.Application.Interfaces.Service
         Task<GuestlistFilteredResponse> GetByShareCodeAsync(string shareCode);
         Task<GuestlistConfigResponse> UpdateAsync(int gueslistConfigId, SaveGuestlistConfigRequest request);
         Task<GuestlistConfigResponse> GetByIdAsync(int Id);
+        Task<bool> DeleteById(int id);
     }
 }

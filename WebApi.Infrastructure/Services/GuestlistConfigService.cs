@@ -29,9 +29,18 @@ namespace WebApi.Infrastructure.Services
             return mapper.Map<GuestlistConfigResponse>(guestlistConfig);
         }
 
+        public async Task<bool> DeleteById(int id)
+        {
+            var guestlistConfig = await guestlistConfigRespository.GetOneAsync(e => e.Id == id, includeProperties: ["Event"]) ?? throw new NotFoundException("Guest List Configuration");
+
+            await guestlistConfigRespository.DeleteAsync(guestlistConfig);
+
+            return true;
+        }
+
         public async Task<List<GuestlistConfigResponse>> GetByEventIdAsync(int eventId)
         {
-            var guestlistConfig = await guestlistConfigRespository.GetAllAsync(e => e.EventId == eventId, includeProperties: ["Event"]);
+            var guestlistConfig = await guestlistConfigRespository.GetAllAsync(e => e.EventId == eventId, includeProperties: ["Event"])?? throw new NotFoundException("Guest List Configuration");
 
             return mapper.Map<List<GuestlistConfigResponse>>(guestlistConfig);
         }
