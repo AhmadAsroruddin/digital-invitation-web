@@ -1,8 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
+using WebApi.Application.Interfaces;
 using WebApi.Application.Interfaces.Repository;
 using WebApi.Application.Interfaces.Service;
 using WebApi.Infrastructure.Repository;
 using WebApi.Infrastructure.Services;
+using WebApi.Infrastructure.SignalR;
 
 namespace WebApi.Infrastructure.DependencyInjection
 {
@@ -36,6 +38,8 @@ namespace WebApi.Infrastructure.DependencyInjection
 
             services.AddScoped<IGuestlistConfigRespository, GuestListConfigRepository>();
             services.AddScoped<IGuestlistConfigService, GuestlistConfigService>();
+
+            services.AddScoped<IRealtimeEventNotifier, SignalRRealtimeEventNotifier>();
             
             return services;
         }

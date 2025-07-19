@@ -30,7 +30,7 @@ restore:
 reset-db:
 	dotnet ef database drop -p $(INFRA_PROJECT) -s $(STARTUP_PROJECT) --force --no-build
 	dotnet ef database update -p $(INFRA_PROJECT) -s $(STARTUP_PROJECT)
-
+# Menghapus migration terakhir (jika belum di-update): `make rollback`
 rollback:
 	dotnet ef migrations remove -p $(INFRA_PROJECT) -s $(STARTUP_PROJECT)
 

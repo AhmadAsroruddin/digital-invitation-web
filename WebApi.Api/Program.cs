@@ -8,6 +8,7 @@ using WebApi.Infrastructure.Identity;
 using WebApi.Api.Middlewares;
 using WebApi.Infrastructure.DependencyInjection;
 using System.Text.Json.Serialization;
+using WebApi.Shared;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +41,7 @@ builder.Services.AddControllers();
 
 //register dependency injection
 builder.Services.AddApplicationServices();
+builder.Services.AddSignalR();
 builder.Services.AddFluentValidationServices();
 builder.Services.AddAutoMapperServices();
 builder.Services.AddControllers().AddJsonOptions(options =>
@@ -56,6 +58,7 @@ builder.Services.AddCors(options =>
             .WithOrigins("http://localhost:5173")
             .AllowAnyHeader()
             .AllowAnyMethod()
+            .AllowCredentials()
     );
 });
 
@@ -108,6 +111,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.MapHub<GuestListHub>("/guestListHub");
 app.UseHttpsRedirection();
 app.UseMiddleware<ErrorHandlingMiddleware>();
 

@@ -12,7 +12,7 @@ namespace WebApi.Api.Controllers
         public async Task<IActionResult> GetFilteredGuestlist(string shareCodeId)
         {
             var result = await guestlistConfigService.GetByShareCodeAsync(shareCodeId);
-
+            
             return Success(result);
         }
     }
