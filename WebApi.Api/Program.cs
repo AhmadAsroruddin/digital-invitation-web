@@ -100,8 +100,9 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+    var dbContext = services.GetRequiredService<AppDbContext>(); // Tambahkan ini
 
-    await AppDbInitializer.InitializeAsync(roleManager, userManager);
+    await AppDbInitializer.InitializeAsync(roleManager, userManager, dbContext);
 }
 
 // Configure the HTTP request pipeline.
