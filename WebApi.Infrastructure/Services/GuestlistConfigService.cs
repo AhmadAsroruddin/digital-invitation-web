@@ -7,6 +7,7 @@ using WebApi.Application.Exceptions;
 using WebApi.Application.Interfaces.Repository;
 using WebApi.Application.Interfaces.Service;
 using WebApi.Domain.Entities;
+using WebApi.Domain.Enums;
 
 
 namespace WebApi.Infrastructure.Services
@@ -81,15 +82,26 @@ namespace WebApi.Infrastructure.Services
                     {
                         guest = guest.Where(g => g.SubEventId == int.Parse(filter.Value));
                     }
-                    if (filter.Key == "RSVP" && filter.Value != "")
+                    if (filter.Key == "RSVP" && !string.IsNullOrWhiteSpace(filter.Value))
                     {
-                        if (filter.Value.Equals("all", StringComparison.CurrentCultureIgnoreCase))
+                        var value = filter.Value.Trim().ToLower();
+
+                        if (value == "all")
                         {
                             guest = guest.Where(e => e.RSVP != null);
                         }
                         else
                         {
-                            guest = guest.Where(e => e.RSVP != null && e.RSVP.Status == filter.Value);
+                            var normalized = value.Replace(" ", "").Replace("_", "");
+
+                            if (Enum.TryParse<RSVPStatus>(normalized, ignoreCase: true, out var status))
+                            {
+                                guest = guest.Where(e => e.RSVP != null && e.RSVP.Status == status);
+                            }
+                            else
+                            {
+                                guest = guest.Where(e => false);
+                            }
                         }
                     }
                 }

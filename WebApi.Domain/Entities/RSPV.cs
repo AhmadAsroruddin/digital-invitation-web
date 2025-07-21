@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using WebApi.Domain.Common;
+using WebApi.Domain.Enums;
 
 namespace WebApi.Domain.Entities
 {
@@ -9,7 +10,7 @@ namespace WebApi.Domain.Entities
         public int GuestSubEventId { get; set; }
         [ForeignKey("GuestSubEventId")]
         public GuestSubEvent? GuestSubEvent { get; set; }
-        public string Status { get; set; } = default!; 
+        public RSVPStatus Status { get; set; } = default!; 
         public int PaxConfirmed { get; set; }
         public DateTime RSVPTime { get; set; }
     }

@@ -5,6 +5,7 @@ using WebApi.Application.DTOs.Response;
 using WebApi.Application.Interfaces.Repository;
 using WebApi.Application.Interfaces.Service;
 using WebApi.Domain.Entities;
+using WebApi.Domain.Enums;
 using WebApi.Shared;
 
 namespace WebApi.Infrastructure.Services
@@ -25,7 +26,9 @@ namespace WebApi.Infrastructure.Services
         {
             var exists = await _rSPVRepository.GetOneAsync(x => x.Id == guestSubEventId);
             if (exists != null)
-                throw new InvalidOperationException("Guest already do RSVP");
+            {
+                throw new InvalidOperationException("RSVP failed: guest has already submitted a response.");
+            }
 
             var guestSubEvent = await _guestSubEventRepository.GetOneAsync(
                 e => e.Id == guestSubEventId,
@@ -35,6 +38,7 @@ namespace WebApi.Infrastructure.Services
             var rsvp = _mapper.Map<RSVP>(request);
             rsvp.GuestSubEventId = guestSubEventId;
             rsvp.RSVPTime = DateTime.Now;
+            rsvp.Status = ParseRSVPStatus(request.Status);
 
             if (request.PaxConfirmed > (guestSubEvent.SubEvent?.MaxPax ?? int.MaxValue))
                 throw new InvalidProgramException("RSVP failed: participant quota has been reached.");
@@ -73,5 +77,19 @@ namespace WebApi.Infrastructure.Services
         {
             throw new NotImplementedException();
         }
+
+        private static RSVPStatus ParseRSVPStatus(string status)
+        {
+            var normalized = status.Replace(" ", "").Replace("_", "").ToLower();
+
+            return normalized switch
+            {
+                "attending" => RSVPStatus.Attending,
+                "notattending" => RSVPStatus.NotAttending,
+                _ => throw new ArgumentException(
+                    $"Invalid RSVP status: '{status}'. Allowed values: 'attending', 'not_attending'.")
+            };
+        }
+
     }
 }
