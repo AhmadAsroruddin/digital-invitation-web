@@ -7,6 +7,8 @@ namespace WebApi.Api.Controllers
     [Route("api/v1/guest-list/")]
     public class GuestlistController(IGuestlistConfigService guestlistConfigService) : BaseApiController
     {
+        private readonly IGuestlistConfigService guestlistConfigService = guestlistConfigService;
+        
         [HttpGet]
         [Route("{shareCodeID}")]
         public async Task<IActionResult> GetFilteredGuestlist(string shareCodeId)

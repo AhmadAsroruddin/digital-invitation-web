@@ -100,7 +100,8 @@ namespace WebApi.Infrastructure.Services
                 ConfigurationName = config.Name,
                 FilterJson = config.FilterJson,
                 ColumnsJson = config.ColumnsJson,
-                Event = mapper.Map<EventResponse>(guest.FirstOrDefault()!.SubEvent!.Event),
+                SubEvent = mapper.Map<SubEventResponse>(config.SubEvent),
+                Event = mapper.Map<EventResponse>(guest.FirstOrDefault()?.SubEvent?.Event),
                 Guests = [.. guest.Select(g => {
                     return new GuestInList
                     {

@@ -1,17 +1,20 @@
 using AutoMapper;
+using Microsoft.AspNetCore.SignalR;
 using WebApi.Application.DTOs.Request.GuestSubEvent;
 using WebApi.Application.DTOs.Response;
 using WebApi.Application.Exceptions;
 using WebApi.Application.Interfaces.Repository;
 using WebApi.Application.Interfaces.Service;
 using WebApi.Domain.Entities;
+using WebApi.Shared;
 
 namespace WebApi.Infrastructure.Services
 {
-    public class GuestSubEventService(IGuestSubEventRepository guestSubEventRepository, IMapper mapper) : IGuestSubEventService
+    public class GuestSubEventService(IGuestSubEventRepository guestSubEventRepository, IMapper mapper, IHubContext<GuestListHub> hubContext) : IGuestSubEventService
     {
         private readonly IGuestSubEventRepository guestSubEventRepository = guestSubEventRepository;
         private readonly IMapper mapper = mapper;
+        private readonly IHubContext<GuestListHub> _hubContext = hubContext;
 
         public async Task<GuestSubEventResponse> CreateAsync(int subEventId, SaveGuestSubEventRequest request)
         {
@@ -26,6 +29,14 @@ namespace WebApi.Infrastructure.Services
 
             await guestSubEventRepository.CreateAsync(guestSubEvent);
 
+            var response = mapper.Map<GuestSubEventResponse>(guestSubEvent);
+
+            await _hubContext.Clients.Group($"event_{guestSubEvent.SubEventId}")
+                .SendAsync("EventEntityChanged", new
+                {
+                    type = "CHECKIN_UPDATED",
+                    entity = response
+                });
             return mapper.Map<GuestSubEventResponse>(guestSubEvent);
         }
 

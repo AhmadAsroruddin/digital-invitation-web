@@ -14,9 +14,9 @@ namespace WebApi.Api.Controllers
 
         [HttpPost]
         [Route("event/{eventId}/guest")]
-        public async Task<IActionResult> Create(int eventId,[FromForm] SaveGuestRequest request)
+        public async Task<IActionResult> Create(int eventId, [FromForm] SaveGuestRequest request)
         {
-            var result = await guestService.CreateAsync(eventId,request);
+            var result = await guestService.CreateAsync(eventId, request);
 
             return Success(result, "Guest Created");
         }
@@ -46,6 +46,15 @@ namespace WebApi.Api.Controllers
             await guestService.DeletedAsync(guestId, eventId);
 
             return Success<object>(null, "Event Deleted");
+        }
+        
+        [HttpPut]
+        [Route("event/{eventId}/guest/{guestId}")]
+        public async Task<IActionResult> Update(int eventId, int guestId,[FromForm] SaveGuestRequest request)
+        {
+            var result = await guestService.UpdateAsync(guestId, request);
+
+            return Success(result, "Guest Updated");
         }
 
     }

@@ -1,17 +1,20 @@
 using AutoMapper;
+using Microsoft.AspNetCore.SignalR;
 using WebApi.Application.DTOs.Request.CheckIn;
 using WebApi.Application.DTOs.Response;
 using WebApi.Application.Interfaces.Repository;
 using WebApi.Application.Interfaces.Service;
 using WebApi.Domain.Entities;
+using WebApi.Shared;
 
 namespace WebApi.Infrastructure.Services
 {
-    public class CheckInService(ICheckInRepository checkinRepository, IRSPVRepository rSPVRepository,IMapper mapper) : ICheckInService
+    public class CheckInService(ICheckInRepository checkinRepository, IRSPVRepository rSPVRepository, IHubContext<GuestListHub> hubContext,IMapper mapper) : ICheckInService
     {
         private readonly ICheckInRepository checkinRepository = checkinRepository;
         private readonly IRSPVRepository rSPVRepository = rSPVRepository;
         private readonly IMapper mapper = mapper;
+        private readonly IHubContext<GuestListHub> _hubContext = hubContext;
 
         public async Task<CheckInResponse> CreateAsync(SaveCheckInRequest request)
         {
@@ -20,6 +23,17 @@ namespace WebApi.Infrastructure.Services
             checkin.CheckedIn = true;
 
             await checkinRepository.CreateAsync(checkin);
+            var checkinSaved = await checkinRepository.GetOneAsync(e => e.CheckinId == checkin.CheckinId, includeProperties: ["GuestSubEvent.SubEvent"]);
+            var subEventId = checkinSaved?.GuestSubEvent?.SubEventId;
+            
+            var checkInResponse = mapper.Map<CheckInResponse>(checkin);
+
+            await _hubContext.Clients.Group($"event_{subEventId}")
+                .SendAsync("EventEntityChanged", new
+                {
+                    type = "CHECKIN_UPDATED",
+                    entity = checkInResponse
+                });
 
             return mapper.Map<CheckInResponse>(checkin);
         }

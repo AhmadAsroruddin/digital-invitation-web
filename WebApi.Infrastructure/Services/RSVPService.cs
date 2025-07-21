@@ -23,35 +23,33 @@ namespace WebApi.Infrastructure.Services
 
         public async Task<RSVPResponse> CreateAsync(int guestSubEventId, SaveRSVPRequest request)
         {
-            // Cek apakah sudah pernah RSVP
             var exists = await _rSPVRepository.GetOneAsync(x => x.Id == guestSubEventId);
             if (exists != null)
                 throw new InvalidOperationException("Guest already do RSVP");
 
-            // Ambil detail sub-event beserta Event parent-nya
             var guestSubEvent = await _guestSubEventRepository.GetOneAsync(
                 e => e.Id == guestSubEventId,
                 includeProperties: ["SubEvent", "SubEvent.Event"])
                 ?? throw new InvalidOperationException("Guest Sub event not found");
 
-            // Mapping RSVP dari request, assign GuestSubEventId dan waktu RSVP
             var rsvp = _mapper.Map<RSVP>(request);
             rsvp.GuestSubEventId = guestSubEventId;
             rsvp.RSVPTime = DateTime.Now;
 
-            // Cek kuota
             if (request.PaxConfirmed > (guestSubEvent.SubEvent?.MaxPax ?? int.MaxValue))
                 throw new InvalidProgramException("RSVP failed: participant quota has been reached.");
 
-            // Simpan RSVP
             await _rSPVRepository.CreateAsync(rsvp);
 
-            // Mapping response
             var rsvpResponse = _mapper.Map<RSVPResponse>(rsvp);
-            var eventId = guestSubEvent.SubEvent!.EventId;
+            var subEventId = guestSubEvent.SubEvent?.Id;
 
-            // --- [ SIGNALR BROADCAST KE GROUP SESUAI EVENT ] ---
-            await _hubContext.Clients.Group($"event_{eventId}").SendAsync("RSVPUpdated", rsvpResponse);
+            await _hubContext.Clients.Group($"event_{subEventId}")
+                .SendAsync("EventEntityChanged", new
+                {
+                    type = "RSVP_UPDATED",
+                    entity = rsvpResponse
+                });
 
             return rsvpResponse;
         }

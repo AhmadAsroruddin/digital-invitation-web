@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using WebApi.Application.DTOs.Request.Guest;
 using WebApi.Application.DTOs.Response;
@@ -6,15 +7,18 @@ using WebApi.Application.Exceptions;
 using WebApi.Application.Interfaces.Repository;
 using WebApi.Application.Interfaces.Service;
 using WebApi.Domain.Entities;
+using WebApi.Shared;
 
 namespace WebApi.Infrastructure.Services
 {
-    public class GuestService(IGuestRepository guestRepository, IMapper mapper) : IGuestService
+    public class GuestService(IGuestRepository guestRepository ,IGuestSubEventRepository guestSubEventRepository,IMapper mapper, IHubContext<GuestListHub> hubContext) : IGuestService
     {
         private readonly IGuestRepository guestRepository = guestRepository;
+        private readonly IGuestSubEventRepository guestSubEventRepository = guestSubEventRepository;
         private readonly IMapper mapper = mapper;
+        private readonly IHubContext<GuestListHub> _hubContext = hubContext;
 
-        public async Task<GuestResponse> CreateAsync(int eventId,SaveGuestRequest request)
+        public async Task<GuestResponse> CreateAsync(int eventId, SaveGuestRequest request)
         {
             var guest = mapper.Map<Guest>(request);
             guest.EventId = eventId;
@@ -48,9 +52,28 @@ namespace WebApi.Infrastructure.Services
             return response;
         }
 
-        public Task<GuestResponse> UpdateAsync(int id, SaveGuestRequest request)
+        public async Task<GuestResponse> UpdateAsync(int id, SaveGuestRequest request)
         {
-            throw new NotImplementedException();
+            var guest = await guestRepository.GetOneAsync(e => e.Id == id) ?? throw new NotFoundException("Guest");
+
+            mapper.Map(request, guest);
+
+            await guestRepository.UpdateAsync(guest);
+
+            var response = mapper.Map<GuestResponse>(guest);
+            var subEventList = await guestSubEventRepository.GetAllAsync(e => e.GuestId == id);
+            
+            foreach (var subEvent in subEventList)
+            {
+                await _hubContext.Clients.Group($"event_{subEvent.SubEventId}")
+                .SendAsync("EventEntityChanged", new
+                {
+                    type = "GUEST_UPDATED",
+                    entity = response
+                });
+            }
+
+            return response;
         }
     }
 }
