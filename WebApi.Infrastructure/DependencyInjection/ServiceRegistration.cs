@@ -42,6 +42,13 @@ namespace WebApi.Infrastructure.DependencyInjection
             services.AddScoped<IRealtimeEventNotifier, SignalRRealtimeEventNotifier>();
 
             services.AddScoped<IStatisticService, StatisticService>();
+
+            services.AddScoped<IConsumeDataService, ConsumeDataService>();
+            services.AddHttpClient("ConsumeDataClient", client =>
+            {
+                client.BaseAddress = new Uri("https://dummyjson.com/");
+            });
+
             return services;
         }
     }

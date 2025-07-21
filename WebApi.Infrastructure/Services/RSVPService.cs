@@ -24,7 +24,7 @@ namespace WebApi.Infrastructure.Services
 
         public async Task<RSVPResponse> CreateAsync(int guestSubEventId, SaveRSVPRequest request)
         {
-            var exists = await _rSPVRepository.GetOneAsync(x => x.Id == guestSubEventId);
+            var exists = await _rSPVRepository.GetOneAsync(x => x.GuestSubEventId == guestSubEventId);
             if (exists != null)
             {
                 throw new InvalidOperationException("RSVP failed: guest has already submitted a response.");
