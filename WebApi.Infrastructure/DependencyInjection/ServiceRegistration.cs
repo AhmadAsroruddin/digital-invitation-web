@@ -40,7 +40,8 @@ namespace WebApi.Infrastructure.DependencyInjection
             services.AddScoped<IGuestlistConfigService, GuestlistConfigService>();
 
             services.AddScoped<IRealtimeEventNotifier, SignalRRealtimeEventNotifier>();
-            
+
+            services.AddScoped<IStatisticService, StatisticService>();
             return services;
         }
     }
