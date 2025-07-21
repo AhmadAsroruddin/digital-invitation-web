@@ -1,6 +1,7 @@
 using System.Text.Json;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.SignalR;
 using WebApi.Application.DTOs.Request.GuestListConfig;
 using WebApi.Application.DTOs.Response;
 using WebApi.Application.Exceptions;
@@ -8,16 +9,18 @@ using WebApi.Application.Interfaces.Repository;
 using WebApi.Application.Interfaces.Service;
 using WebApi.Domain.Entities;
 using WebApi.Domain.Enums;
+using WebApi.Shared;
 
 
 namespace WebApi.Infrastructure.Services
 {
-    public class GuestlistConfigService(IGuestlistConfigRespository guestlistConfigRespository, IGuestSubEventRepository guestSubEventRepository , IRSPVRepository rSPVRepository, ICheckInRepository checkInRepository,IMapper mapper) : IGuestlistConfigService
+    public class GuestlistConfigService(IGuestlistConfigRespository guestlistConfigRespository, IGuestSubEventRepository guestSubEventRepository , IRSPVRepository rSPVRepository, ICheckInRepository checkInRepository, IHubContext<GuestListHub> hubContext,IMapper mapper) : IGuestlistConfigService
     {
         private readonly IGuestlistConfigRespository guestlistConfigRespository = guestlistConfigRespository;
         private readonly IGuestSubEventRepository guestSubEventRepository = guestSubEventRepository;
         private readonly IRSPVRepository rSPVRepository = rSPVRepository;
         private readonly ICheckInRepository checkInRepository = checkInRepository;
+        private readonly IHubContext<GuestListHub> _hubContext = hubContext;
         private readonly IMapper mapper = mapper;
 
         public async Task<GuestlistConfigResponse> CreateAsync(SaveGuestlistConfigRequest request)
@@ -149,6 +152,13 @@ namespace WebApi.Infrastructure.Services
             guestlistConfig.FilterJson = JsonSerializer.Serialize(request.FilterJson);
             guestlistConfig.ColumnsJson = JsonSerializer.Serialize(request.ColumnsJson);
             await guestlistConfigRespository.UpdateAsync(guestlistConfig);
+
+            await _hubContext.Clients.Group($"event_{guestlistConfig.SubEventId}")
+                .SendAsync("EventEntityChanged", new
+                {
+                    type = "RSVP_UPDATED",
+                    entity = guestlistConfig
+                });
 
             return mapper.Map<GuestlistConfigResponse>(guestlistConfig);
         }
