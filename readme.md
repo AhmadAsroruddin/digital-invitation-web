@@ -3,7 +3,6 @@
 Aplikasi Web API ASP.NET Core yang menggunakan:
 - ✅ Entity Framework Core
 - ✅ SignalR (Real-time)
-- ✅ Clean Architecture (opsional)
 
 ---
 
