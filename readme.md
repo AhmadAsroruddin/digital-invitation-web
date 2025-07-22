@@ -11,7 +11,6 @@ Aplikasi Web API ASP.NET Core yang menggunakan:
 
 Setelah clone project ini:
 
-```bash
 make restore
 
 make update-db
